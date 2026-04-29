@@ -145,7 +145,7 @@ exports.transferirInterbancario = async (req, res) => {
   }
 
   try {
-    // 1. Verificar saldo en nuestra DB
+    // Validar disponibilidad de fondos
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('saldo')
@@ -160,7 +160,7 @@ exports.transferirInterbancario = async (req, res) => {
       return res.status(400).json({ error: 'Saldo insuficiente' });
     }
 
-    // 2. Realizar petición externa al Banco Aerum
+    // Ejecutar transacción hacia gateway interbancario
     try {
       const response = await axios.post('https://banco-aerum.vercel.app/api/interbank/receive', {
         account_number: cuenta_destino,
@@ -174,7 +174,7 @@ exports.transferirInterbancario = async (req, res) => {
         }
       });
 
-      // 3. Descontar saldo en nuestra DB
+      // Actualizar balance local tras confirmación externa
       const nuevoSaldo = Number(userData.saldo) - Number(monto);
       const { error: updateError } = await supabase
         .from('usuarios')
@@ -185,7 +185,7 @@ exports.transferirInterbancario = async (req, res) => {
         return res.status(500).json({ error: 'Error al actualizar saldo tras transferencia exitosa' });
       }
 
-      // 4. Registrar la transacción en nuestra tabla local
+      // Registrar auditoría de movimiento
       const { data: txData, error: txError } = await supabase
         .from('transacciones')
         .insert([
