@@ -30,12 +30,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transacciones', transactionRoutes);
 
 // Ruta de prueba
-app.get('/', (req, res) => {
+app.get('/api/status', (req, res) => {
   res.json({ status: "Servidor de Banca Online Operativo" });
 });
 
 // Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor base ejecutándose en http://localhost:${port}`);
-  console.log(`Documentación de Swagger disponible en http://localhost:${port}/api-docs`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Servidor base ejecutándose en http://localhost:${port}`);
+    console.log(`Documentación de Swagger disponible en http://localhost:${port}/api-docs`);
+  });
+}
+
+module.exports = app;
