@@ -30,7 +30,7 @@ const Login = () => {
     setError('');
     setLoading(true);
     try {
-      const response = await api.post('/login', { email, password });
+      const response = await api.post('/auth/login', { email, password });
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         navigate('/inicio');
